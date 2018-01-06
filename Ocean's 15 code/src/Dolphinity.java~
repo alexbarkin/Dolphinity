@@ -1,0 +1,973 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+import javax.imageio.ImageIO;
+import java.io.*;
+import java.awt.print.*;
+
+/**
+ *Main class.  Runs the dolphinity game and sets up the JFrame with a Panel.  Implements Runnable so that the game is threaded
+ *
+ * @author J Levy and A Barkin
+ * @version 5.0.0 06.09.2015
+ * 
+ * Alex - Updated Time Spent as of June 9, 2015: 20.5 Hours
+ * - making menus and editing, refinement, and shortcuts
+ * - continue vs new game functionality
+ * 
+ * Jordan - Updated Time Spent as of June 9, 2015: 24 Hours
+ * - Made frames to help program flow
+ * - running actual game
+ * 
+ * Together - Updated Time Spent as of June 9, 2015: 5.5 Hours
+ * - mainly fixing glitches so it works
+ */
+public class Dolphinity implements Runnable
+{
+  /**WIDTH - int Width of the JFrame in pixels*/
+  public static final int WIDTH = 800;
+  /**HEIGHT - int Height of the JFrame in pixels*/
+  public static final int HEIGHT = 590;
+  /**WATER_HEIGHT - int Height of the water in pixels*/
+  public static final int WATER_HEIGHT = 300;
+  /**SOFT_FLOOR - int Height slightly above the bottom.  Where collision with the ground starts to take effect*/
+  public static final int SOFT_FLOOR = 550;
+  /**WATER_FRICTION - int Friction between the dolphin and the water.  Essentially, the viscosity of the water*/
+  public static final double WATER_FRICTION = 1.000001;
+  /**TITLE - String Title of the JFrame*/
+  public static final String TITLE = "Dolphinity";
+  /**EASY_SPEED - int speed of the dolphin on easy level*/
+  public static final double EASY_SPEED = 1;
+  /**MEDIUM_SPEED - int speed of the dolphin on medium level*/
+  public static final double MEDIUM_SPEED = 1.5;
+  /**HARD_SPEED - int speed of the dolphin on hard level*/
+  public static final double HARD_SPEED = 2;
+  /**chooser - String to get the name of the user*/
+  public static String chooser = "";
+  /**isRunning - boolean true if the game is running*/
+  public static boolean isRunning = false; 
+  /**neww - boolean true if it is a new game*/
+  public static boolean neww = true;
+  /**mainMenuFrame - JFrame for the main menu*/
+  JFrame mainMenuFrame;
+  /**levelMenuFrame - JFrame for the level menu*/
+  JFrame levelMenuFrame;
+  /**pauseMenuFrame - JFrame for the pause menu*/
+  JFrame pauseMenuFrame;
+  /**gameFrame - JFrame for the game*/
+  JFrame gameFrame;
+  /**highScoresFrame - JFrame for the high scores menu*/
+  JFrame highScoresFrame;
+  /**resultsFrame - JFrame for the results menu*/
+  JFrame resultsFrame;
+  /**fishLessonFrame - JFrame for the fish lesson*/
+  JFrame fishLessonFrame;
+  /**mainMenuPanel - JPanel for the main menu*/
+  MainMenuPanel mainMenuPanel;
+  /**levelMenuPanel - JPanel for the level menu*/
+  LevelMenuPanel levelMenuPanel;
+  /**pauseMenuPanel - JPanel for the pause menu*/
+  PauseMenuPanel pauseMenuPanel;
+  /**gamePanel - JPanel for the game*/
+  GamePanel gamePanel;
+  /**highScoresPanel - JPanel for the high scores menu*/
+  HighScoresPanel highScoresPanel;
+  /**resultsPanel - JPanel for the results menu*/
+  ResultsPanel resultsPanel;
+  /**fishLessonPanel - JPanel for the fish lesson*/
+  FishLessonPanel fishLessonPanel;
+  /**isHighScore - boolean true if the score is a new high score*/
+  public static boolean isHighScore;
+  /**playerName - String name of the player*/
+  public static String playerName = "";
+  /**score - Score of the player */
+  public static Score score;
+  /**dolphin - Dolphin oblect for the player to play as*/
+  static Dolphin dolphin;
+  /**background - Background of the game*/
+  Background background;
+  /**fishFileNames - String[] file names of all non-endangered fish images in the game*/
+  public static String[] fishFileNames = new String[]{"Atlantic_Mackrel", "Flounder_Fish", "Herring", "Sardine", "Sea_Bass"};
+  /**endangeredFishFileNames - String[] file names of all endangered fish images in the game*/
+  public static String[] endangeredFishFileNames = new String[]{"Endangered_Chesapeake_Bay_Sturgen", "Endangered_Puget_Sound_Bocaccio", "Endangered_Puget_Sound_Rockfish_Canary", "Endangered_Snake_River_Sockeye_Salmon", "Endangered_Sword_Fish", "Endangered_Upper_Columbia_River_Trout"};
+  /**fishImages - Image[] images of all non-endangered fish in the game*/
+  public static Image[] fishImages = new Image [fishFileNames.length];
+  /**endangeredFishImages - Image[] images of all endangered fish in the game*/
+  public static Image[] endangeredFishImages = new Image [endangeredFishFileNames.length];
+  /**fishes - ArrayList of Fish all fishes currently in play (including endangered and non-endangered)*/
+  public static ArrayList < Fish > fishes = new ArrayList < Fish > ();
+  /**garbageFileNames - String[] file names of all garbage images in the game*/
+  public static String[] garbageFileNames = new String[]{"Garbage_Apple", "Garbage_Bottle", "Garbage_Broken_TV", "Garbage_Crinkled_Can", "Garbage_Dead_Fish", "Garbage_Light_Bulb", "Garbage_White_Wall_Tire"};
+  /**garbageImages - Image[] images of all garbage in the game*/
+  public static Image[] garbageImages = new Image [garbageFileNames.length];
+  /**garbages - ArrayList of Garbage all garbage currenyly in play*/
+  public static ArrayList < Garbage > garbages = new ArrayList < Garbage > ();
+  /**hoops - ArrayList of Hoop all hoops currently in play*/
+  public static ArrayList < Hoop > hoops = new ArrayList < Hoop > ();
+  /**timeBonus - int time bonus for time spent alive*/
+  public static int timeBonus = 0;
+  
+  /**
+   * The main constructor sets up every frame and panel, loads the fish and garbage images, and starts the game Thread
+   * <p>
+   * <b>Local variables: </b>
+   * <p>
+   * <b> i </b> for loop variable to go through the file names of fish and garbage
+   * <p>
+   * <b> e </b> IOException caught for reading images from files
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st for loop</b> used to run through every endangered fish and load it into the array
+   * <p>
+   * <b> 2nd for loop</b> used to run through every garbage object image and load it into the array
+   * 
+   * 
+   * <p>
+   * <b>Try Catch blocks:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to catch if the fishimage isn't found so the program does not crash.
+   * <p>
+   * <b> 2nd Try Catch</b> used to catch if the garbage image isn't found so the program does not crash.
+   * 
+   */ 
+  public Dolphinity ()
+  {
+    mainMenuFrame = new JFrame ();
+    mainMenuPanel = new MainMenuPanel ();
+    mainMenuPanel.setPreferredSize (new Dimension (MainMenuPanel.WIDTH, MainMenuPanel.HEIGHT));
+    mainMenuFrame.add (mainMenuPanel);
+    mainMenuFrame.addKeyListener (mainMenuPanel);
+    mainMenuFrame.addMouseListener (mainMenuPanel);
+    mainMenuFrame.addMouseMotionListener (mainMenuPanel);
+    mainMenuFrame.setTitle (TITLE);
+    mainMenuFrame.pack ();
+    mainMenuFrame.setLocationRelativeTo (null);
+    mainMenuFrame.setAlwaysOnTop (true);
+    mainMenuFrame.setResizable (false);
+    mainMenuFrame.setVisible (true);
+    
+    levelMenuFrame = new JFrame ();
+    levelMenuPanel = new LevelMenuPanel ();
+    levelMenuPanel.setPreferredSize (new Dimension (LevelMenuPanel.WIDTH, LevelMenuPanel.HEIGHT));
+    levelMenuFrame.add (levelMenuPanel);
+    levelMenuFrame.addKeyListener (levelMenuPanel);
+    levelMenuFrame.addMouseListener (levelMenuPanel);
+    levelMenuFrame.addMouseMotionListener (levelMenuPanel);
+    levelMenuFrame.setTitle (TITLE);
+    levelMenuFrame.pack ();
+    levelMenuFrame.setLocationRelativeTo (null);
+    levelMenuFrame.setAlwaysOnTop (true);
+    levelMenuFrame.setResizable (false);
+    levelMenuFrame.setVisible (false);
+    
+    highScoresFrame = new JFrame ();
+    highScoresPanel = new HighScoresPanel ();
+    highScoresPanel.setPreferredSize (new Dimension (HighScoresPanel.WIDTH, HighScoresPanel.HEIGHT));
+    highScoresFrame.add (highScoresPanel);
+    highScoresFrame.addKeyListener (highScoresPanel);
+    highScoresFrame.addMouseListener (highScoresPanel);
+    highScoresFrame.addMouseMotionListener (highScoresPanel);
+    highScoresFrame.setTitle (TITLE);
+    highScoresFrame.pack ();
+    highScoresFrame.setLocationRelativeTo (null);
+    highScoresFrame.setAlwaysOnTop (false);
+    highScoresFrame.setResizable (false);
+    highScoresFrame.setVisible (false);
+    
+    fishLessonFrame = new JFrame ();
+    fishLessonPanel = new FishLessonPanel ();
+    fishLessonPanel.setPreferredSize (new Dimension (FishLessonPanel.WIDTH, FishLessonPanel.HEIGHT));
+    fishLessonFrame.add (fishLessonPanel);
+    fishLessonFrame.addKeyListener (fishLessonPanel);
+    fishLessonFrame.addMouseListener (fishLessonPanel);
+    fishLessonFrame.addMouseMotionListener (fishLessonPanel);
+    fishLessonFrame.setTitle (TITLE);
+    fishLessonFrame.pack ();
+    fishLessonFrame.setLocationRelativeTo (null);
+    fishLessonFrame.setAlwaysOnTop (true);
+    fishLessonFrame.setResizable (false);
+    fishLessonFrame.setVisible (false);
+    
+    pauseMenuFrame = new JFrame ();
+    pauseMenuPanel = new PauseMenuPanel ();
+    pauseMenuPanel.setPreferredSize (new Dimension (PauseMenuPanel.WIDTH, PauseMenuPanel.HEIGHT));
+    pauseMenuFrame.add (pauseMenuPanel);
+    pauseMenuFrame.addKeyListener (pauseMenuPanel);
+    pauseMenuFrame.addMouseListener (pauseMenuPanel);
+    pauseMenuFrame.addMouseMotionListener (pauseMenuPanel);
+    pauseMenuFrame.setTitle (TITLE);
+    pauseMenuFrame.pack ();
+    pauseMenuFrame.setLocationRelativeTo (null);
+    pauseMenuFrame.setAlwaysOnTop (true);
+    pauseMenuFrame.setResizable (false);
+    pauseMenuFrame.setVisible (false);
+    
+    gameFrame = new JFrame ();
+    gamePanel = new GamePanel (this);
+    gamePanel.setPreferredSize (new Dimension (WIDTH, HEIGHT));
+    gameFrame.add (gamePanel);
+    gameFrame.addKeyListener (gamePanel);
+    gameFrame.addMouseListener(gamePanel);
+    gameFrame.addMouseMotionListener(gamePanel);
+    gameFrame.setTitle (TITLE);
+    gameFrame.pack ();
+    gameFrame.setLocationRelativeTo (null);
+    gameFrame.setAlwaysOnTop (true);
+    gameFrame.requestFocusInWindow ();
+    gameFrame.setResizable (false);
+    gameFrame.setVisible (false);
+    
+    resultsFrame = new JFrame ();
+    resultsPanel = new ResultsPanel (this);
+    resultsPanel.setPreferredSize (new Dimension (ResultsPanel.WIDTH, ResultsPanel.HEIGHT));
+    resultsFrame.add (resultsPanel);
+    resultsFrame.addKeyListener (resultsPanel);
+    resultsFrame.addMouseListener (resultsPanel);
+    resultsFrame.addMouseMotionListener (resultsPanel);
+    resultsFrame.setTitle (TITLE);
+    resultsFrame.pack ();
+    resultsFrame.setLocationRelativeTo (null);
+    resultsFrame.setAlwaysOnTop (true);
+    resultsFrame.setResizable (false);
+    resultsFrame.setVisible (false);
+    
+    for (int i = 0 ; i < fishFileNames.length ; i++)
+    {
+      try
+      {
+        fishImages [i] = (ImageIO.read (new File (new File (System.getProperty ("user.dir")).getParentFile ().toString () +
+                                                  System.getProperty ("file.separator") + "Ocean's 15 code" +
+                                                  System.getProperty ("file.separator") + "res" +
+                                                  System.getProperty ("file.separator") + "Fish" +
+                                                  System.getProperty ("file.separator") + "Not Endangered" +
+                                                  System.getProperty ("file.separator") + fishFileNames [i] + ".png")));
+      }
+      catch (IOException e)
+      {
+        JOptionPane.showMessageDialog(null, "Error", "Image could not be found", JOptionPane.ERROR_MESSAGE);
+        System.exit(0);
+      }
+    }
+    
+    for (int i = 0 ; i < garbageFileNames.length ; i++)
+    {
+      try
+      {
+        garbageImages [i] = (ImageIO.read (new File (new File (System.getProperty ("user.dir")).getParentFile ().toString () +
+                                                     System.getProperty ("file.separator") + "Ocean's 15 code" +
+                                                     System.getProperty ("file.separator") + "res" +
+                                                     System.getProperty ("file.separator") + "Garbage" +
+                                                     System.getProperty ("file.separator") +
+                                                     System.getProperty ("file.separator") + garbageFileNames [i] + ".png")));
+      }
+      catch (IOException e)
+      {
+        JOptionPane.showMessageDialog(null, "Error", "Image could not be found", JOptionPane.ERROR_MESSAGE);
+        System.exit(0);
+      }
+    }
+    score = new Score("", 0, "easy");
+    new Thread (this).run ();
+  }
+  
+  /**
+   * Checks for user input when the main menu is shown.  If "Exit" is pressed, the goodbye panel is shown and the
+   * program ends.  If "Info" is pressed, the About window is shown.  If "High Scores" is pressed, the high scores
+   * panel is shown.  If "Play" is pressed, the level menu is shown.
+   * <p>
+   * <b>Local variables: </b>
+   * <p>
+   * <b> label </b> JLabel to show text when info is selected
+   * <p>
+   * <b> e </b> Exception caught for Thread sleeping
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to constantly check for a state change in the MainMenuPanel class 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes 
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to control program flow and send the program to a different method depending on which option is selected
+   */
+  private void mainMenu ()
+  {
+    while (true)
+    {
+      try
+      {
+        Thread.sleep (5);
+      }
+      catch (Exception e)
+      {
+      }
+      if (MainMenuPanel.escape)
+      {
+        mainMenuFrame.dispose ();
+        new GoodbyePanel ();
+      }
+      else if (MainMenuPanel.info)
+      {
+        MainMenuPanel.info = false;
+        mainMenuFrame.setAlwaysOnTop (false);
+        JLabel label = new JLabel ("<html><center><h1 style='color:blue' ><u>About the Programmers</u></h1></center><ul>"
+                                     + "<li><b><u>Alex Barkin</u></b> HI! My name is Alex! I am the company representative for Ocean's 15."
+                                     + "<p>I hope you enjoy our game! We are so glad to have made it and cannot wait to hear feedback!</p>"
+                                     + "<li><b><u>Jordan Levy</u></b> HI! My name is Jordan! I am the Dolphinity project lead for Ocean's 15."
+                                     + "<p>I started programming when I was 11! Since then I have written A LOT of code!</p>"
+                                     + "<p>We have worked very hard to code this game. Hope you enjoy it!</p>"
+                                     + "<center><br> Ocean's 15 inc. Dolphinity ©</center>"
+                                     + "</ul></html>");
+        label.setFont (new Font ("century gothic", Font.PLAIN, 14));
+        label.setIcon (new ImageIcon (mainMenuPanel.getImage ("logo")));
+        JOptionPane.showMessageDialog (null, label, "About", JOptionPane.INFORMATION_MESSAGE);
+      }
+      else if (MainMenuPanel.question)
+      {     
+        MainMenuPanel.question = false;
+        mainMenuFrame.setAlwaysOnTop (false);
+        String programPath = new String( "hh.exe Help.chm");
+        try 
+        { 
+          Runtime.getRuntime ( ).exec (programPath); 
+        } 
+        catch (IOException e) 
+        { 
+          JOptionPane.showMessageDialog(null,"Couldn't find Help File", "Error",JOptionPane.ERROR_MESSAGE);
+        } 
+      }
+      else if (MainMenuPanel.play)
+      {
+        MainMenuPanel.play = false;
+        mainMenuFrame.setVisible (false);
+        levelMenuFrame.setVisible (true);
+        levelMenu ();
+        break;
+      }
+      else 
+      {
+        if (MainMenuPanel.highScores)
+        {
+          MainMenuPanel.highScores = false;
+          mainMenuFrame.setVisible (false);
+          highScoresFrame.setVisible (true);
+          highScores ();
+          break;
+        }
+      }
+    }
+  }
+  /**
+   *This method is used for the FishLessonPanel class to be runa and update constantly.
+   * It makes the program more KISS because it must be called from two seperate spots.
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to constantly check for a state change in the FishLessonPanel class 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes 
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to control program flow and send the program to a different method depending on which option is selected
+   */
+  public void fishLesson()
+  {
+    fishLessonFrame.setVisible (true);
+    fishLessonFrame.repaint ();
+    fishLessonFrame.revalidate ();
+    while (true)
+    {
+      try
+      {
+        Thread.sleep (5);
+      }
+      catch (Exception e)
+      {
+      }
+      if (FishLessonPanel.escape)
+      {
+        resultsFrame.dispose ();
+        new GoodbyePanel ();
+      }
+      else 
+      {
+        if (FishLessonPanel.enter)
+        {
+          fishLessonFrame.setVisible (false);
+          FishLessonPanel.enter = false;
+          FishLessonPanel.done = false;
+          break;
+        }
+      }
+    }
+    score = new Score(score.getName(),0,score.getLevel());
+    dolphin = new Dolphin (50, 300);
+    GamePanel.start = System.currentTimeMillis();
+    gameFrame.setVisible (true);
+    isRunning = true;
+    fishes = new ArrayList < Fish > ();
+    garbages = new ArrayList < Garbage > ();
+    dolphin.velocityX = (score.getLevel().equals("easy"))?EASY_SPEED:(score.getLevel().equals("medium"))?MEDIUM_SPEED:HARD_SPEED;
+    score.setScore(0);
+    neww = true;
+  }
+  
+  /**
+   * Checks for user input when the results menu is shown.  If the score is a high score, it is added to the list of
+   * high scores, the list is sorted, and the list is written to the high scores file.  If "Play Again" is pressed, 
+   * a new game on the same difficulty as before is started, and the game panel is shown.  If "Main Menu" is pressed, 
+   * the main menu is shown.  If "Exit" is pressed, the goodbye panel is shown and the program exits.
+   * <p>
+   * <b>Local variables: </b>
+   * <p>
+   * <b> e </b> Exception caught for Thread sleeping
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to constantly check for a state change in the HighScoresPanel class 
+   * <p>
+   * <b> 2nd while loop</b> used to constantly check for a state change in the FishLessonPanel class 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes in the 1st while loop
+   * <p>
+   * <b> 2nd Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes in the 2nd while loop
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to check if there is a new high score and set isHighScore accordingly
+   * <p>
+   * <b> 2nd if structure</b> used to set the new high score if one is recieved
+   * <p>
+   * <b> 1st if structure in 2nd if structure</b> used to add the highscore or replace a highscore if there are already 10
+   * <p>
+   * <b> 3rd if structure</b> used to control program flow and direct the program depending on which option is selected in ResultsPanel
+   * <p>
+   * <b> 4th if structure</b> used to control program flow and direct the program depending on which option is selected in FishLessonPanel
+   * 
+   */
+  private void results ()
+  {
+    isHighScore = false;
+    GamePanel.key_space = false;
+    GamePanel.key_w = false;
+    timeBonus = (100*(((int)GamePanel.minutes*2)+((((int)GamePanel.seconds)>=30)?1:0)));
+    score.setScore(score.getScore() + timeBonus);
+    if (HighScores.scores.size () < 10 || score.getScore () > HighScores.scores.get (9).getScore ())
+    {
+      isHighScore = true;
+    }
+    if (isHighScore)
+    {
+      score.setName (playerName);
+      score.setLevel (((LevelMenuPanel.choice == 0) ? "easy":(LevelMenuPanel.choice == 1) ? "medium": "hard"));
+      if (HighScores.scores.size () < 10)
+      {
+        HighScores.scores.add (score);
+        HighScores.sort ();
+        HighScores.write ();
+      }
+      else
+      {
+        HighScores.scores.add (score);
+        HighScores.sort ();
+        HighScores.scores.remove (10);
+        HighScores.write ();
+      }
+    }
+    while (true)
+    {
+      try
+      {
+        Thread.sleep (5);
+      }
+      catch (Exception e)
+      {
+      }
+      if (ResultsPanel.exit)
+      {
+        resultsFrame.dispose ();
+        new GoodbyePanel ();
+      }
+      else if (ResultsPanel.playAgain)
+      {
+        resultsFrame.setAlwaysOnTop (false);
+        resultsFrame.setAlwaysOnTop (true);
+        dolphin.velocityX = (score.getLevel().equals("easy"))?EASY_SPEED:(score.getLevel().equals("medium"))?MEDIUM_SPEED:HARD_SPEED;
+        ResultsPanel.playAgain = false;
+        ResultsPanel.enter = false;
+        resultsFrame.setVisible (false);
+        fishLesson();
+        break;
+      }
+      else 
+      {
+        if (ResultsPanel.mainMenu)
+        {
+          ResultsPanel.enter = false;
+          ResultsPanel.mainMenu = false;
+          resultsFrame.setVisible (false);
+          mainMenuFrame.setVisible (true);
+          mainMenu ();
+          break;
+        }
+      }
+    }
+  }
+  
+  /**
+   * Method used to load the correct amount of fish based on the level the user is on 
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st for loop</b> used to run through every fish which must be loaded into the array 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to catch if the fish images cannot be found
+   * 
+   */
+  private void loadFish()
+  {
+    for (int i = 0 ; i < (LevelMenuPanel.easy ? 1:LevelMenuPanel.medium ? 3:6) ; i++)
+    {
+      try
+      {
+        endangeredFishImages [i] = (ImageIO.read (new File (new File (System.getProperty ("user.dir")).getParentFile ().toString () +
+                                                            System.getProperty ("file.separator") + "Ocean's 15 code" +
+                                                            System.getProperty ("file.separator") + "res" +
+                                                            System.getProperty ("file.separator") + "Fish" +
+                                                            System.getProperty ("file.separator") + "Endangered" +
+                                                            System.getProperty ("file.separator") + endangeredFishFileNames [i] + ".png")));
+      }
+      catch (IOException e)
+      {
+        JOptionPane.showMessageDialog(null, "Error", "Image could not be found", JOptionPane.ERROR_MESSAGE);
+        System.exit(0);
+      }
+    }
+  }
+  
+  /**
+   * Checks for user input when the level menu is shown (as well as the fish lesson panel).  If "Easy", "Medium", or
+   * "Hard" are selected, the level is set accordingly, a list of the endangered fish that will appear in the level is
+   * created, the user will be asked for their name (which will be checked for length and content), and the fish lesson
+   * panel is shown.  On this fish lesson panel, if the mouse is clicked or a key is pressed, the game starts and the
+   * game panel is shown.  If the "escape" key is pressed, the goodbye panel is shown and the program exits.
+   * 
+   * <p>
+   * <b>Local Variables:</b>
+   * <p>
+   * <b> e </b> Exception caught for Thread sleeping
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to constantly check for a state change in the LevelMenuPanel class 
+   * <p>
+   * <b> 2nd while loop</b> used to ask for a player name until a valid one is entered
+   * <p>
+   * <b> 3rd while loop</b> used to constantly check for a state change in the FishLessonPanel class 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes for the LevelMenuPanel
+   * <p>
+   * <b> 2nd Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes for the FishLessonPanel
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to control program flow if a level is selected to start the process of starting said level.
+   * <p>
+   * <b> 1st if structure in 1st if structure</b> used to differentitiate which level is being palyed and set the profile accordingly.
+   * <p>
+   * <b> 2nd if structure in 1st if structure</b> used to return to LevelMenuPanel if cancel is selected.
+   * <p>
+   * <b> 3rd if structure in 1st if structure</b> used to check the name and make sure it is acceptable and display errors if it is not.
+   * <p>
+   * <b> 4th if structure in 1st if structure</b> used to control program flow and direct the program depending on which option is selected in FishLessonPanel
+   */
+  private void levelMenu ()
+  {
+    while (true)
+    {
+      try
+      {
+        Thread.sleep (5);
+      }
+      catch (Exception e)
+      {
+      }
+      if (LevelMenuPanel.easy || LevelMenuPanel.medium || LevelMenuPanel.hard)
+      {
+        if(LevelMenuPanel.easy)
+          score.setLevel("easy");
+        else if(LevelMenuPanel.medium)
+          score.setLevel("medium");
+        else
+          score.setLevel("hard");
+        LevelMenuPanel.enter = false;
+        levelMenuFrame.setVisible (false);
+        loadFish();
+        while (true)
+        {
+          chooser = JOptionPane.showInputDialog (levelMenuPanel, "Please enter your name", playerName);
+          if (chooser == null)
+          {
+            LevelMenuPanel.easy = false;
+            LevelMenuPanel.medium = false;
+            LevelMenuPanel.hard = false;
+            levelMenuFrame.setVisible (true);
+            levelMenu ();
+            break;
+          }
+          playerName = (chooser.endsWith(" ")? chooser:(chooser + " "));
+          if (playerName.split (" ").length <= 0)
+            JOptionPane.showMessageDialog (levelMenuPanel, "Name must contain characters", "Name", JOptionPane.ERROR_MESSAGE);
+          else if(playerName.length() >= 15)
+            JOptionPane.showMessageDialog (levelMenuPanel, "Name cannot exceed 15 characters", "Name", JOptionPane.ERROR_MESSAGE);
+          else
+            break;
+        }
+        LevelMenuPanel.easy = false;
+        LevelMenuPanel.medium = false;
+        LevelMenuPanel.hard = false;
+        fishLesson();
+        break;
+      }
+      else 
+      {
+        if ( LevelMenuPanel.returnn)
+        {
+          LevelMenuPanel.returnn = false;
+          LevelMenuPanel.enter = false;
+          levelMenuFrame.setVisible (false);
+          mainMenuFrame.setVisible (true);
+          mainMenu ();
+          break;
+        }
+      }
+    }
+  }
+  
+  /**
+   * Checks for user input when the high scores menu is shown, and displays an ordered list from 1 to 10 of the highest
+   * scores acheived on the game, regardless of the level they were acheived on.  Input will only register at least
+   * 0.3 seconds after the window opened, so that input from the main menu does not carry over.  If "Print" is pressed,
+   * the high scores are printed on a printer.  If "Clear: is pressed, all existing high scores are cleared from the
+   * list.  If "Menu" is pressed, the main menu panel is shown.  If the "escape" key is pressed, the goodbye panel is
+   * shown, and the program exits.
+   * <p>
+   * <b>Local variables: </b>
+   * <p>
+   * <b> startTime </b> Used so that input cannot be entered in the first moments that the window opens, in order for
+   * keyboard input from the main menu panel not to carry over.
+   * <p>
+   * <b> job </b> PrinterJob to handle the request to print
+   * <p>
+   * <b> ok </b> boolean true if it is ok to print
+   * <p>
+   * <b> e </b> Exception caught for Thread sleeping
+   * <p>
+   * <b> e </b> PrinterException caught for printing on a printer
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to constantly check for a state change in the HighScoresPanel class 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes 
+   * <p>
+   * <b> 2nd Try Catch</b> used to catch printer exception so if anything goes wrong while prining the program doesnt crash
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to ensure no input is read in first few seconds to ensure main menu selection does not carry over
+   * <p>
+   * <b> 1st if structure in the 1st if structure</b> used to control program flow and direct the program depending on what the user selects in HighScoresPanel
+   * <p>
+   * <b> 1st if structure in the 1st if structure in the 1st if structure</b> used to print if it finds printer and job is ok
+   */
+  private void highScores ()
+  {
+    long startTime = System.currentTimeMillis ();
+    HighScores.read ();
+    while (true)
+    {
+      try
+      {
+        Thread.sleep (5);
+      }
+      catch (Exception e)
+      {
+      }
+      if (System.currentTimeMillis () - startTime >= 300)
+      {
+        if (HighScoresPanel.escape)
+        {
+          highScoresFrame.dispose ();
+          new GoodbyePanel ();
+        }
+        else if(HighScoresPanel.print)
+        {
+          HighScoresPanel.print = false;
+          try
+          {
+            PrinterJob job = PrinterJob.getPrinterJob();
+            job.setPrintable(new HighScores());
+            boolean ok = job.printDialog();
+            if(ok)
+            {
+              job.print();
+              ok = false;
+            }
+          }
+          catch(PrinterException e)
+          {
+            JOptionPane.showMessageDialog(null, "Printer Error", "Print request could not be completed", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+          }
+        }
+        else if(HighScoresPanel.clear)
+        {
+          HighScoresPanel.clear = false;
+          HighScores.clear(); 
+        }
+        else 
+        {
+          if (HighScoresPanel.menu)
+          {
+            HighScoresPanel.menu = false;
+            highScoresFrame.setVisible (false);
+            mainMenuFrame.setVisible (true);
+            mainMenu ();
+            break;
+          }
+        }
+      }
+    }
+  }
+  
+  /**
+   * Checks for user input when the pause menu is shown.  If "Continue" is pressed, the game is continued and the game
+   * panel is shown.  If "Main Menu" is pressed, the main menu panel is shown.  If "Exit" is pressed, the goodbye panel
+   * is shown and the program exits.
+   * 
+   * <p>
+   * <b>Local variables: </b>
+   * <p>
+   * <b> e </b> Exception caught for Thread sleeping
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to constantly check for a state change in the PauseMenuPanel class 
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes in the PauseMenuPanel
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to control program flow and send the program to a different method depending on which option is selected
+   */
+  private void pauseMenu ()
+  {
+    while (true)
+    {
+      try
+      {
+        Thread.sleep (5);
+      }
+      catch (Exception e)
+      {
+      }
+      if (PauseMenuPanel.exit)
+      {
+        pauseMenuFrame.dispose ();
+        new GoodbyePanel ();
+      }
+      else if (PauseMenuPanel.continuer)
+      {
+        PauseMenuPanel.enter = false;
+        PauseMenuPanel.continuer = false;
+        pauseMenuFrame.setVisible (false);
+        gameFrame.setVisible (true);
+        isRunning = true;
+        neww = false;
+        Thread thread = new Thread (this);
+        thread.run ();
+        break;
+      }
+      else 
+      {
+        if (PauseMenuPanel.mainMenu)
+        {
+          PauseMenuPanel.enter = false;
+          PauseMenuPanel.mainMenu = false;
+          pauseMenuFrame.setVisible (false);
+          mainMenuFrame.setVisible (true);
+          mainMenu ();
+          break;
+        }
+      }
+    }
+  }
+  
+  
+  /**
+   * This method overrides the Runnable run() method, and is the threaded game loop.  If it is a new game, fishes,
+   * garbages, dolphin, and background are initialized and the mainMenu() method is called.  The score is reseet, and
+   * the dolphin's velocity in the x direction is set dependent on the level.  In the game loop, garbage, fish, and
+   * hoops are spawned in.  The dolphin, the fish, the garbage, and the background are moved.  If the "escape" button
+   * is pressed, the goodbye panel is shown and the program exits.
+   * <p>
+   * <b> Local variables: </b>
+   * <p>
+   * <b> e </b> Exception caught for Thread sleeping
+   * 
+   * <p>
+   * <b>loops:</b>
+   * <p>
+   * <b> 1st while loop</b> used to refresh the game constantly only while it is running
+   * <p>
+   * <b> 1st for loop</b> used to refresh and move the dolphin 1000 times every frame
+   * <p>
+   * <b> 2nd for loop</b> used to refresh and move each fish every frame
+   * <p>
+   * <b> 3rd for loop</b> used to refresh and move each garbage every frame
+   * <p>
+   * <b> 4th for loop</b> used to refresh and move each hoop every frame
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to delay the checking and catch the thread.sleep so that it has time to register changes in the GamePanel
+   * 
+   * <p>
+   * <b>Conditional Statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to only reset the variables if the user starts a new round
+   * <p>
+   * <b> 2nd if structure</b> used to remove the last fish if there are 20 so the ArrayList does not become too large
+   * <p>
+   * <b> 3rd if structure</b> used to remove the last garbage if there are 20 so the ArrayList does not become too large
+   * <p>
+   * <b> 4th if structure</b> used to remove the last hoop if there are 20 so the ArrayList does not become too large
+   * <p>
+   * <b> 5th if structure</b> used to add a fish if a random double is smaller than a certain weighted average
+   * <p>
+   * <b> 6th if structure</b> used to add a garbage if a random double is smaller than a third of the weighted average
+   * <p>
+   * <b> 7th if structure</b> used to add a hoop if a random double is smaller than 0.0009
+   * <p>
+   * <b> 8th if structure</b> used to direct program flow depending on which option is clicked in GamePanel
+   */
+  public void run ()
+  {
+    if (neww)
+    {
+      fishes = new ArrayList < Fish > ();
+      garbages = new ArrayList < Garbage > ();
+      mainMenu ();
+      dolphin = new Dolphin (50, 300);
+      background = new Background ();
+      neww = false;
+    }
+    score.setScore(0);
+    dolphin.velocityX = (score.getLevel().equals("easy"))?EASY_SPEED:(score.getLevel().equals("medium"))?MEDIUM_SPEED:HARD_SPEED;
+    while (isRunning)
+    {
+      if (fishes.size () > 20)
+        fishes.remove (1);
+      if (garbages.size () > 20)
+        garbages.remove (1);
+      if (hoops.size () > 20)
+        hoops.remove (1);
+      double condition = ((LevelMenuPanel.choice == 0) ? 0.003:(LevelMenuPanel.choice == 1) ? 0.004: 0.006);
+      if (Math.random () < condition)
+        fishes.add (new Fish ());
+      if (Math.random () < (condition / 3))
+        garbages.add (new Garbage ());
+      if (Math.random () < 0.0009)
+        hoops.add (new Hoop ());
+      for (int i = 0 ; i < 1000 ; i++)
+      {
+        dolphin.move ();
+      }
+      for (int i = 0 ; i < fishes.size () ; i++)
+      {
+        fishes.get (i).move ();
+      }
+      for (int i = 0 ; i < garbages.size () ; i++)
+      {
+        garbages.get (i).move ();
+      }
+      for (int i = 0 ; i < hoops.size () ; i++)
+      {
+        hoops.get (i).move ();
+      }
+      background.move ();
+      if (GamePanel.key_escape)
+      {
+        gameFrame.dispose ();
+        new GoodbyePanel ();
+      }
+      else if (GamePanel.gameOver)
+      {
+        GamePanel.gameOver = false;
+        gameFrame.setVisible (false);
+        resultsFrame.setVisible (true);
+        isRunning = false;
+        results ();
+      }
+      else
+      {
+        if (GamePanel.key_enter)
+        {
+          GamePanel.key_enter = false;
+          gameFrame.setVisible (false);
+          pauseMenuFrame.setVisible (true);
+          isRunning = false;
+          pauseMenu ();
+        }
+      }
+      gamePanel.repaint ();
+      try
+      {
+        Thread.sleep (3);
+      }
+      catch (Exception e)
+      {
+      }
+    }
+  }
+}

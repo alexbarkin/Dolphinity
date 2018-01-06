@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<drjava version="drjava-20140826-r5761">
+  <project autorefresh="false" build="bin/" main="JFrameTestApp" manifest="" root="src/" work="">
+    <createjar file="Dolphinity.jar" flags="12"/>
+    <source>
+      <file active="true" name="GamePanel.java" package="" timestamp="08-Jun-2015 22:01:17">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Main.java" package="" timestamp="08-Jun-2015 02:12:52">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Collideable.java" package="" timestamp="07-Jun-2015 21:15:46">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Background.java" package="" timestamp="08-Jun-2015 00:56:18">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Garbage.java" package="" timestamp="08-Jun-2015 01:38:00">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Score.java" package="" timestamp="07-Jun-2015 21:22:04">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="FishLessonPanel.java" package="" timestamp="08-Jun-2015 10:57:12">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="HighScores.java" package="" timestamp="08-Jun-2015 10:58:04">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="PauseMenuPanel.java" package="" timestamp="08-Jun-2015 11:04:30">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="GoodbyePanel.java" package="" timestamp="08-Jun-2015 11:06:14">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="SplashScreen.java" package="" timestamp="08-Jun-2015 11:06:14">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Hoop.java" package="" timestamp="08-Jun-2015 11:06:34">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Net.java" package="" timestamp="08-Jun-2015 11:06:48">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Dolphin.java" package="" timestamp="08-Jun-2015 16:39:49">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Fish.java" package="" timestamp="08-Jun-2015 19:52:23">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="Dolphinity.java" package="" timestamp="08-Jun-2015 22:00:09">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="MainMenuPanel.java" package="" timestamp="08-Jun-2015 23:20:36">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="LevelMenuPanel.java" package="" timestamp="08-Jun-2015 23:20:36">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="ResultsPanel.java" package="" timestamp="08-Jun-2015 23:21:35">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+      <file name="HighScoresPanel.java" package="" timestamp="08-Jun-2015 23:23:06">
+        <select from="0" to="16339"/>
+        <scroll column="8907" row="0"/>
+      </file>
+    </source>
+    <included/>
+    <excluded/>
+    <collapsed/>
+    <classpath/>
+    <breakpoints/>
+    <watches/>
+    <bookmarks/>
+    <preferences/>
+  </project>
+</drjava>

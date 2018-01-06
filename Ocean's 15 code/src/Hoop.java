@@ -1,0 +1,129 @@
+import java.awt.*;
+import javax.imageio.ImageIO;
+import java.io.*;
+import javax.swing.*;
+
+/**
+ * Hoop class to randomly make hoop objects for the game.
+ * 
+ * @author Jordan Levy
+ * @version 5.0.0 06.09.2015
+ * 
+ * Jordan - Updated Time Spent as of May 29, 2015: 1.5 Hours
+ * - setting up class 
+ * - collision detection 
+ * - drawing what when
+ * */
+public class Hoop extends Collideable
+{
+  /**imageLeft - Image used to store the left side of the hoop*/
+  Image imageLeft;
+  /**imageRight - Image used to store the right side of the hoop*/
+  Image imageRight;
+  /**x - double used to store the x value of the hoop's location*/
+  double x;
+  /**y - double used to store the y value of the hoop's location*/
+  double y;
+  /**speed - double used to store the speed of the background so the hoops move accordingly*/
+  double speed;
+  /**collided - boolean used to store whether or not the dolphin has collided with the hoop hitbox*/
+  boolean collided = false;
+  /**temp2 - int used to keep the hoop for a certain amount of time after it is created*/
+  int temp2 = 0;
+  
+  /**
+   * Constructor used to create a Hoop object when wanted 
+   * 
+   * <p>
+   * <b>Local variables:</b>
+   * <p>
+   * <b>e -</b> IOException used incase of an IO error
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to ensure program safety incase image cannot be found
+   * 
+   */
+  public Hoop ()
+  {
+    x = Dolphinity.WIDTH  - 30;
+    y = Math.random() * 200;
+    try
+    {
+      imageLeft = (ImageIO.read (new File (new File (System.getProperty ("user.dir")).getParentFile ().toString () +
+                                           System.getProperty ("file.separator") + "Ocean's 15 code" +
+                                           System.getProperty ("file.separator") + "res" +
+                                           System.getProperty ("file.separator") + "Hoop" +
+                                           System.getProperty ("file.separator") + 
+                                           System.getProperty ("file.separator") + "hoop_left.png")));
+      imageRight = (ImageIO.read (new File (new File (System.getProperty ("user.dir")).getParentFile ().toString () +
+                                            System.getProperty ("file.separator") + "Ocean's 15 code" +
+                                            System.getProperty ("file.separator") + "res" +
+                                            System.getProperty ("file.separator") + "Hoop" +
+                                            System.getProperty ("file.separator") + 
+                                            System.getProperty ("file.separator") + "hoop_right.png")));
+    }catch(IOException e)
+    {
+      JOptionPane.showMessageDialog(null, "Error", "Image could not be found", JOptionPane.ERROR_MESSAGE);
+      System.exit(0);
+    }
+    hitBoxRadiusX = imageLeft.getWidth(null) / 4;
+    hitBoxRadiusY = imageLeft.getHeight(null) / 4;
+    hitBoxX = x + hitBoxRadiusX + 30;
+    hitBoxY = y + hitBoxRadiusY + 30;
+  }
+  
+  /**
+   * Method used to move the hoops with the background 
+   */
+  public void move()
+  {
+    x -= Dolphinity.dolphin.velocityX;
+    hitBoxX = x + hitBoxRadiusX + 30;
+    hitBoxY = y + hitBoxRadiusY + 30;
+  }
+  
+  /**
+   * method used to return whether or not something has collided and what
+   * <p>
+   * <b>Local variables:</b>
+   * <p>
+   * <b>t -</b> double df angle between hoop and dolphin
+   * <p>
+   * <b>px -</b> double point x on hoop circumference that intersects with line from hoop to dolphin
+   * <p>
+   * <b>py -</b> double point y on hoop circumference that intersects with line from hoop to dolphin
+   * <p>
+   * <b>rp -</b> double radius from hoop center to point on circumference
+   * <p>
+   * <b>d -</b> double relative point, not absolute for pfx and pfy
+   * 
+   * <p>
+   * <b>Conditional statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to only check collision if it hasnt already collided
+   * <p>
+   * <b> 1st if structure in the 1st if structure</b> used to return 1 if the dolphin collides with a hoop
+   *
+   * @return int to represent what has collided and if it has
+   */
+  public int getCollisionStatus()
+  {
+    if (!collided)
+    {
+      double t = Math.atan2(Dolphinity.dolphin.hitBoxX - hitBoxX, Dolphinity.dolphin.hitBoxY - hitBoxY);
+      double px = hitBoxX + hitBoxRadiusX * Math.cos(t);
+      double py = hitBoxY + hitBoxRadiusY * Math.sin(t);
+      double rp = Math.sqrt(Math.pow(px - hitBoxX,2) + Math.pow(py - hitBoxY ,2));
+      double d = Math.sqrt(Math.pow(hitBoxX - Dolphinity.dolphin.hitBoxX ,2) + Math.pow(hitBoxY - Dolphinity.dolphin.hitBoxY ,2));
+      
+      if(d <= rp + Dolphinity.dolphin.hitBoxRadius)
+      {
+        //collision between hoop and dolphin 
+        return 1;
+      }
+    }
+    return 0;
+  }
+}

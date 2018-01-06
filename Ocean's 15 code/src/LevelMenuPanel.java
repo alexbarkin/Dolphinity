@@ -1,0 +1,389 @@
+import javax.swing.*;
+import java.awt.event.*;
+import java.awt.*;
+import java.io.*;
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+
+/**
+ * Panel used to display the level menu options to select which level to play
+ * 
+ * @author A Barkin
+ * @version 5.0.0 06.09.2015
+ * 
+ * Alex - Updated Time Spent as of June 9, 2015: 2.5 Hours
+ * - making menu options save their value 
+ * - getting selector and hover to work
+ */
+public class LevelMenuPanel extends JPanel implements KeyListener, MouseListener, MouseMotionListener
+{
+  /**hint - JLabel used to show the key shortcuts when that option is being "hovered" over*/
+  JLabel hint;
+  /**choice - int used to store which choice is currently selected*/
+  public static int choice = 0;
+  /**CHOICE_MAX - final int used to store the max amount of options on the screen*/
+  public static final int CHOICE_MAX = 2;
+  /**selectorY - int used to store the current y location of where the selector is*/
+  public int selectorY = 60;
+  /** enter - boolean used when the enter key is pressed
+    * easy - boolean used when easy is selected
+    * medium - boolean used when medium is selected
+    * hard - boolean used when hard is selected
+    * returnn - boolean used when return is selected
+    */
+  public static boolean enter = false, easy = false, medium = false, hard = false, returnn = false;
+  /**WIDTH - final int used to store the preferred width of the screen*/
+  public static final int WIDTH = 780;
+  /**HEIGHT - final int used to store the preferred height of the screen*/
+  public static final int HEIGHT = 400;
+  
+  /**
+   * Constructor used to call the JPanel and set it's layout to null it also creates the hint JLabel and adds it to said panel
+   */
+  public LevelMenuPanel()
+  {
+    super();
+    setLayout(null);
+    hint = new JLabel();
+    hint.setForeground(Color.WHITE);
+    hint.setSize(150, 40);
+    hint.setLocation(220, 70);
+    hint.setText("press e");
+    add(hint);
+  }
+  
+  /**
+   * Method invoked when a key is pressed used to control program flow when a key that is pertanent to the program is pressed
+   * 
+   * <p>
+   * <b>Conditional statements:</b>
+   * <p>
+   * <b> 1st if structure</b> used to direct which option is selected depending on which key is pressed
+   * <p>
+   * <b> 1st if structure in the 1st if structure</b> used to reset the selector to let it go in circles
+   * <p>
+   * <b> 2nd if structure in the 1st if structure</b> used to reset the selector to let it go in circles
+   * <p>
+   * <b> 2nd if structure </b> used to move the hint depending on what is currently selected
+   * 
+   * @param e- KeyEvent used to store the value of the key pressed
+   */
+  public void keyPressed(KeyEvent e)
+  {
+    if (e.getKeyCode () == KeyEvent.VK_UP)
+    {
+      if(choice >= 1)
+      {
+        choice--;
+      }
+      else
+      {
+        choice = 3; 
+      }
+    }
+    else if (e.getKeyCode () == KeyEvent.VK_DOWN)
+    {
+      if(choice < 3)
+      {
+        choice++;
+      }
+      else
+      {
+        choice = 0; 
+      }
+    }
+    else if (e.getKeyCode () == KeyEvent.VK_E)
+    {
+      choice = 0; 
+      enter = true;
+      easy = true;
+    }
+    else if (e.getKeyCode () == KeyEvent.VK_M)
+    {
+      choice = 1; 
+      enter = true;
+      medium = true;
+    }
+    else if (e.getKeyCode () == KeyEvent.VK_H)
+    {
+      choice = 2; 
+      enter = true;
+      hard = true;
+    }
+    else if (e.getKeyCode () == KeyEvent.VK_BACK_SPACE)
+    {
+      choice = 3; 
+      enter = true;
+      returnn = true;
+    }
+    else 
+    {
+      if (e.getKeyCode () == KeyEvent.VK_ENTER)
+      {
+        enter = true;
+        if (choice == 0)
+          easy = true;
+        else if (choice == 1)
+          medium = true;
+        else if (choice == 2)
+          hard = true;
+        else 
+          if (choice == 3)
+          returnn = true;
+      }
+    }
+    if(choice == 0)
+    {
+      hint.setLocation(220, 70);
+      hint.setText("press e");
+    }
+    else if(choice == 1)
+    {
+      hint.setLocation(220, 150);
+      hint.setText("press m");
+    }
+    else if(choice == 2)
+    {
+      hint.setLocation(220, 220);
+      hint.setText("press h");
+    }
+    else 
+    {
+      if(choice == 3)
+      {
+        hint.setLocation(610, 90);
+        hint.setText("press back space");
+      }
+    }
+    paintComponent (this.getGraphics ());
+  }
+  
+  /**
+   * Method invoked when a key is released used to undo the effects of keyPressed()
+   * @param e- KeyEvent used to store the value of the key released
+   */
+  public void keyReleased(KeyEvent e)
+  {
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of KeyListener
+   * @param e- KeyEvent used to store the value of the key released
+   */
+  public void keyTyped(KeyEvent e)
+  {
+    
+  }
+  
+  /** Method used to read an image and return said image
+    * 
+    * <p>
+    * <b>Local variables:</b>
+    * <p>
+    * <b>image -</b> BufferedImage used to store the image before it is returned
+    * <p>
+    * <b>e -</b> IOException used incase of an IO error
+    * 
+    * <p>
+    * <b>Try Catch statements:</b>
+    * <p>
+    * <b> 1st Try Catch</b> used to ensure program safety incase image cannot be found
+    * 
+    * @param name A String used to identify the image to be read.
+    * @return returns the BufferedImage which is read and hopefully does not catch the IOException if it does it returns null
+    * 
+    */
+  public BufferedImage getImage(String name) 
+  {
+    try {
+      BufferedImage image = ImageIO.read(new File(new File(System.getProperty("user.dir")).getParentFile().toString() +
+                                                  System.getProperty("file.separator") + "Ocean's 15 code" + 
+                                                  System.getProperty("file.separator") + "res" + 
+                                                  System.getProperty("file.separator") + name+".png")) ;
+      return image;
+    } 
+    catch (IOException e)
+    {
+      JOptionPane.showMessageDialog(null, "Error", "Image could not be found", JOptionPane.ERROR_MESSAGE);
+      System.exit(0);
+    }
+    return null;
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseMotionListener
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mouseExited(MouseEvent e)
+  {
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseMotionListener
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mouseDragged(MouseEvent e)
+  {
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseMotionListener and to 
+   *      track where the mouse is when its moved and change the options accordingly
+   * 
+   * <p>
+   * <b>Conditional statements:</b>
+   * <p>
+   * <b> 1st if statement</b> used to change the selector location based on where the cursor is
+   * <p>
+   * <b> 1st if statement in the 1st if statement</b> used to only change the cursor if it isnt already that spot
+   * <p>
+   * <b> 2nd if statement in the 1st if statement</b> used to only change the cursor if it isnt already that spot
+   * <p>
+   * <b> 3rd if statement in the 1st if statement</b> used to only change the cursor if it isnt already that spot
+   * <p>
+   * <b> 3rd if statement</b> used to only refresh the screen if something has changed
+   * <p>
+   * <b> 4th if structure </b> used to move the hint depending on what is currently selected
+   * 
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mouseMoved(MouseEvent e)
+  {
+    boolean changed = false;
+    int y = e.getY();
+    if (y > 0 && y <= 100 && e.getX()>500)
+    {
+      if (choice !=3)
+        changed = true;
+      choice = 3; 
+    }
+    else if(y > 95 && y <= 175)
+    {
+      if (choice != 0)
+        changed = true;
+      choice = 0;
+    }
+    else if(y > 175 && y <= 265)
+    {
+      if (choice != 1)
+        changed = true;
+      choice = 1; 
+    }
+    else
+    {
+      if(y > 265 && y <= 350)
+      {
+        if (choice != 2)
+          changed = true;
+        choice = 2; 
+      }
+    }
+    
+    if(choice == 0)
+    {
+      hint.setLocation(220, 70);
+      hint.setText("press e");
+    }
+    else if(choice == 1)
+    {
+      hint.setLocation(220, 150);
+      hint.setText("press m");
+    }
+    else if(choice == 2)
+    {
+      hint.setLocation(220, 220);
+      hint.setText("press h");
+    }
+    else 
+    {
+      if(choice == 3)
+      {
+        hint.setLocation(610, 90);
+        hint.setText("press back space");
+      }
+    }
+    if (changed)
+      paintComponent (this.getGraphics ());
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseListener
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mouseEntered(MouseEvent e)
+  {
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseListener and reverses the effects of mouseClicked()
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mouseReleased(MouseEvent e)
+  {
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseListener
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mouseClicked(MouseEvent e)
+  {
+    
+  }
+  
+  /**
+   * Method overwritten to fill the requirements of MouseListener used to control menu flow depending on which key is pressed
+   * 
+   * <p>
+   * <b>Conditional statements:</b>
+   * <p>
+   * <b> 1st if statement</b> used to select an option when the mouse is pressed depending on the current selection
+   * 
+   * @param e- MouseEvent used to store the value of the tracked mouse
+   */
+  public void mousePressed(MouseEvent e)
+  {
+    if (choice == 0)
+      easy = true;
+    else if (choice == 1)
+      medium = true;
+    else if (choice == 3)
+      returnn = true;
+    else 
+      if (choice == 2)
+      hard = true;
+    paintComponent (this.getGraphics ());
+  }
+  
+  /**
+   * Overwritten paintComponent method used to paint the paint with the specified graphics
+   * 
+   * <p>
+   * <b>Conditional statements:</b>
+   * <p>
+   * <b> 1st if statement</b> used to only draw on the panel if it exists
+   * <p>
+   * <b> 2nd if statement</b> used to draw the highlighter where the selector is
+   * 
+   * @param g- Graphics used to hold what to paint on the screen
+   */
+  public void paintComponent (Graphics g)
+  {
+    if(g != null)
+    {
+      selectorY = 60 + 75 * choice;
+      g.drawImage(getImage("underwaterGameMenu"),0,0,null);
+      if (choice != 3)
+        g.drawImage(getImage("logo"),50,selectorY,null);
+      if (choice == 3)
+        g.drawImage(getImage("glow"),520,(0-80),null);
+      else  if (choice !=1)
+      {
+        g.drawImage(getImage("blue4"),222,selectorY-((int)selectorY/20)+45,null);
+      }
+      else
+        g.drawImage(getImage("blue5"),222,selectorY-((int)selectorY/20)+45,null);
+      g.drawImage(getImage("return"),600,0,null);
+    }
+  }
+}

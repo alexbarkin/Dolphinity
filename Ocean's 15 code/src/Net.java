@@ -1,0 +1,75 @@
+import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.io.*;
+import java.awt.geom.AffineTransform;
+import javax.swing.*;
+
+/**
+ *Net class. Represents a net object that the dolphin can hold
+ * 
+ * @author Jordan Levy
+ * @version 1.0.0
+ * 
+ * Jordan - Updated Time Spent as of May 29, 2015: 2 Hours
+ * - setting up class 
+ * - collision detection 
+ * - rotation
+ */
+public class Net
+{
+  /**x - double used to store the x value of the net's location*/
+  double x;
+  /**y - double used to store the y value of the net's location*/
+  double y;
+  /**dolphin - Dolphin used to store the current Dolphin object*/
+  Dolphin dolphin;
+  /**isOut - boolean used to hold whether the net is released or not*/
+  boolean isOut;
+  /**image - BufferedImage used to store the net image*/
+  BufferedImage image;
+  /**rotationTransformation - AffineTransform used to store the rotation of the net*/
+  AffineTransform rotationTransformation;
+  /**hitBoxX - double used to store the location of the net's hit box x*/
+  double hitBoxX;
+  /**hitBoxY - double used to store the location of the net's hit box y*/
+  double hitBoxY;
+  /**hitBoxRadius - double used to store the radius of the net's hit box*/
+  double hitBoxRadius = 70;
+  /**hitBoxRadius - double used to store the distance to the net's hit box center*/
+  double hitBoxDistanceCenter = 147;
+  /**hitBoxAngleOffset - double used to store the angle offset of the net's hit box*/
+  double hitBoxAngleOffset = 1.25;
+  
+  /**
+   * Constructor used to create a Net object when wanted 
+   * 
+   * <p>
+   * <b>Local variables:</b>
+   * <p>
+   * <b>e -</b> IOException used incase of an IO error
+   * 
+   * <p>
+   * <b>Try Catch statements:</b>
+   * <p>
+   * <b> 1st Try Catch</b> used to ensure program safety incase image cannot be found
+   * 
+   * @param dolphin Dolphin object so net knows what to attach to
+   */
+  public Net(Dolphin dolphin)
+  {
+    this.dolphin = dolphin;
+    x = dolphin.x;
+    y = dolphin.y;
+    try
+    {
+      image = ImageIO.read(new File(new File(System.getProperty("user.dir")).getParentFile().toString() +
+                                    System.getProperty("file.separator") + "Ocean's 15 code" + 
+                                    System.getProperty("file.separator") + "res" + 
+                                    System.getProperty("file.separator") + "net.png"));
+    }catch(IOException e)
+    {
+      JOptionPane.showMessageDialog(null, "Error", "Image could not be found", JOptionPane.ERROR_MESSAGE);
+      System.exit(0);
+    }
+  }
+}
